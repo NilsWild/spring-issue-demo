@@ -30,20 +30,6 @@ class Person() {
     var version: Long = 0
 }
 
-interface PersonWithFriendsAndFamilySimple {
-    val id: UUID
-    val friends: Set<Friends>
-    val family: Set<Family>
-
-    interface Friends {
-        val id: UUID
-    }
-
-    interface Family{
-        val id: UUID
-    }
-}
-
 interface PersonWithFriendsAndFamily {
     val id: UUID
     val name: String
@@ -65,25 +51,5 @@ interface PersonWithFriendsAndFamily {
     interface Family{
         val id: UUID
         val lastname: String
-    }
-}
-
-
-interface PersonWithFriends {
-    val id: UUID
-    val name: String
-    val lastname: String
-
-    val friends: Set<Friends>
-
-    interface Friends {
-        val id: UUID
-        val name: String
-        val friends: Set<FriendsOfFriends>
-
-        interface FriendsOfFriends {
-            val id: UUID
-            val name: String
-        }
     }
 }
