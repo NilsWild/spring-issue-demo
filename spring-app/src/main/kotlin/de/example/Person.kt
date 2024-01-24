@@ -32,7 +32,6 @@ class Person() {
 
 interface PersonWithFriendsAndFamily {
     val id: UUID
-    val name: String
     val lastname: String
     val family: Set<Family>
     val friends: Set<Friends>

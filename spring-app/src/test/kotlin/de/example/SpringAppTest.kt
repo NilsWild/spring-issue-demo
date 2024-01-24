@@ -18,7 +18,7 @@ class SpringAppTest: Neo4jBaseTest() {
     lateinit var neo4jTemplate: Neo4jTemplate
 
     @Test
-    fun `save and retrieve friends`() {
+    fun `save and retrieve persons`() {
         val person = Person("Alice", "Smith")
         val friend = Person("Bob", "Kelso")
 
@@ -30,9 +30,10 @@ class SpringAppTest: Neo4jBaseTest() {
 
         val retrievedPerson = personRepository.findPersonWithFriendsAndFamilyById(person.id)
 
-        println(retrievedPerson!!.friends.first().name)
-        println(retrievedPerson!!.family.first().lastname)
-        println(retrievedPerson!!.friends.first().friends.first().name)
+        assert(retrievedPerson!!.lastname == "Smith")
+        assert(retrievedPerson!!.friends.first().name == "Bob")
+        assert(retrievedPerson!!.family.first().lastname == "Kelso")
+        assert(retrievedPerson!!.friends.first().friends.first().name == "Alice")
 
     }
 }
