@@ -1,8 +1,11 @@
 package de.example
 
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.neo4j.core.Neo4jTemplate
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
@@ -11,25 +14,54 @@ import org.springframework.transaction.annotation.Transactional
 class SpringAppTest: Neo4jBaseTest() {
 
     @Autowired
-    lateinit var personRepository: PersonRepository
+    lateinit var behaviorRepository: BehaviorRepository
+
+    @Autowired
+    lateinit var neo4jTemplate: Neo4jTemplate
 
     @Test
-    fun `save and retrieve persons`() {
-        val person = Person("Alice", "Smith")
-        val friend = Person("Bob", "Kelso")
+    fun `save and retrieve`() {
+        val stimulus = ReceivedMessage.Stimulus("stimulus", "stimulusheaders")
+        val componentReaction = ComponentReaction("componentReaction", "componentReactionHeaders", setOf(stimulus))
+        val environmentReaction = ReceivedMessage.EnvironmentReaction("environmentReaction", "enviromentReactionHeaders", componentReaction)
+        val behavior = Behavior(setOf(stimulus, componentReaction, environmentReaction))
 
-        person.friends = setOf(friend)
-        person.family = setOf(friend)
-        friend.friends = setOf(person)
+        // val savedBehavior = behaviorRepository.save(behavior)
+        val savedBehavior = neo4jTemplate.saveAs(behavior, BehaviorProjection::class.java)
 
-        personRepository.save(person)
+        val queriedBehavior = behaviorRepository.findProjectionById(behavior.id)
 
-        val retrievedPerson = personRepository.findPersonWithFriendsAndFamilyById(person.id)
+        queriedBehavior?.let {
+            //works
+            assertNotNull(it.messages.first { it.payload == "environmentReaction" }.reactionTo)
+            assertEquals(savedBehavior.messages.first { it.payload == "componentReaction" }.dependsOn!!.size, 1)
 
-        assert(retrievedPerson!!.lastname == "Smith")
-        assert(retrievedPerson!!.friends.first().name == "Bob")
-        assert(retrievedPerson!!.family.first().lastname == "Kelso")
-        assert(retrievedPerson!!.friends.first().friends.first().name == "Alice")
+            //fails
+            assertEquals(it.messages.first{ it.payload == "componentReaction" }.headers, "componentReactionHeaders")
+            assertEquals(it.messages.first { it.payload == "componentReaction" }.dependsOn!!.size, 1)
+        }
+
+    }
+
+    @Test
+    fun `save and retrieve2`() {
+        val stimulus = ReceivedMessage.Stimulus("stimulus", "stimulusheaders")
+        val componentReaction = ComponentReaction("componentReaction", "componentReactionHeaders", setOf(stimulus))
+        val behavior = Behavior(setOf(stimulus, componentReaction))
+
+        // val savedBehavior = behaviorRepository.save(behavior)
+        val savedBehavior = neo4jTemplate.saveAs(behavior, BehaviorProjection::class.java)
+
+        val queriedBehavior = behaviorRepository.findProjectionById(behavior.id)
+
+        queriedBehavior?.let {
+            //works
+            assertEquals(savedBehavior.messages.first { it.payload == "componentReaction" }.dependsOn!!.size, 1)
+
+            //works
+            assertEquals(it.messages.first{ it.payload == "componentReaction" }.headers, "componentReactionHeaders")
+            assertEquals(it.messages.first { it.payload == "componentReaction" }.dependsOn!!.size, 1)
+        }
 
     }
 }
