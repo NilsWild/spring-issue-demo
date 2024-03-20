@@ -14,54 +14,43 @@ import org.springframework.transaction.annotation.Transactional
 class SpringAppTest: Neo4jBaseTest() {
 
     @Autowired
-    lateinit var behaviorRepository: BehaviorRepository
+    lateinit var repository: Repository
 
     @Autowired
     lateinit var neo4jTemplate: Neo4jTemplate
 
     @Test
     fun `save and retrieve`() {
-        val stimulus = ReceivedMessage.Stimulus("stimulus", "stimulusheaders")
-        val componentReaction = ComponentReaction("componentReaction", "componentReactionHeaders", setOf(stimulus))
-        val environmentReaction = ReceivedMessage.EnvironmentReaction("environmentReaction", "enviromentReactionHeaders", componentReaction)
-        val behavior = Behavior(setOf(stimulus, componentReaction, environmentReaction))
+        val bs = setOf(B(), B())
+        val a = A(bs)
+        neo4jTemplate.saveAs(a, AProjection::class.java)
+        val retrieved = repository.findProjectionById(a.id)!!
+        assertEquals(2, retrieved.bs.size)
 
-        // val savedBehavior = behaviorRepository.save(behavior)
-        val savedBehavior = neo4jTemplate.saveAs(behavior, BehaviorProjection::class.java)
+        val newBs = setOf(B())
+        a.bs = newBs
+        neo4jTemplate.saveAs(a, AProjection::class.java)
 
-        val queriedBehavior = behaviorRepository.findProjectionById(behavior.id)
-
-        queriedBehavior?.let {
-            //works
-            assertNotNull(it.messages.first { it.payload == "environmentReaction" }.reactionTo)
-            assertEquals(savedBehavior.messages.first { it.payload == "componentReaction" }.dependsOn!!.size, 1)
-
-            //fails
-            assertEquals(it.messages.first{ it.payload == "componentReaction" }.headers, "componentReactionHeaders")
-            assertEquals(it.messages.first { it.payload == "componentReaction" }.dependsOn!!.size, 1)
-        }
+        val retrievedNew = repository.findProjectionById(a.id)!!
+        assertEquals(1,retrievedNew.bs.size)
 
     }
+
 
     @Test
     fun `save and retrieve2`() {
-        val stimulus = ReceivedMessage.Stimulus("stimulus", "stimulusheaders")
-        val componentReaction = ComponentReaction("componentReaction", "componentReactionHeaders", setOf(stimulus))
-        val behavior = Behavior(setOf(stimulus, componentReaction))
+        val bs = setOf(B(), B())
+        val a = A(bs)
+        neo4jTemplate.saveAs(a, AProjection::class.java)
+        val retrieved = repository.findProjectionById(a.id)!!
+        assertEquals(2, retrieved.bs.size)
 
-        // val savedBehavior = behaviorRepository.save(behavior)
-        val savedBehavior = neo4jTemplate.saveAs(behavior, BehaviorProjection::class.java)
+        a.bs = emptySet()
+        neo4jTemplate.saveAs(a, AProjection::class.java)
 
-        val queriedBehavior = behaviorRepository.findProjectionById(behavior.id)
-
-        queriedBehavior?.let {
-            //works
-            assertEquals(savedBehavior.messages.first { it.payload == "componentReaction" }.dependsOn!!.size, 1)
-
-            //works
-            assertEquals(it.messages.first{ it.payload == "componentReaction" }.headers, "componentReactionHeaders")
-            assertEquals(it.messages.first { it.payload == "componentReaction" }.dependsOn!!.size, 1)
-        }
+        val retrievedNew = repository.findProjectionById(a.id)!!
+        assertEquals(0, retrievedNew.bs.size)
 
     }
+
 }
