@@ -35,6 +35,19 @@ class SpringAppTest: Neo4jBaseTest() {
     }
 
     @Test
+    fun `save and retrieve map b2 first with reference to b1 completely populated`() {
+        val b1 = B(setOf("label"), setOf())
+        val b2 = B(setOf("label"), setOf(b1))
+        val a = A(setOf(b2, b1))
+        val aResult = neo4jTemplate.saveAs(a, AProjection::class.java)
+
+        val queried = repository.findProjectionById(aResult.id)!!
+
+        assertEquals(queried.bs.first().labels,setOf("label"))
+        assertEquals(queried.bs.last().labels,setOf("label"))
+    }
+
+    @Test
     fun `save and retrieve map b1 first`() {
         val b1 = B(setOf("label"), setOf())
         val b2 = B(setOf("label"), setOf(B(setOf(), setOf()).apply {
