@@ -19,7 +19,7 @@
         <kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>
         <kotlin.version>1.9.22</kotlin.version>
         <surefire.version>2.22.2</surefire.version>
-        <spring.version>3.2.3</spring.version>
+        <spring.version>3.3.0</spring.version>
         <source.plugin.version>3.3.0</source.plugin.version>
     </properties>
 
