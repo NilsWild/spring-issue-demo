@@ -25,7 +25,7 @@ class Service(private val repository: Repository): ApplicationListener<Applicati
 
 @Controller
 class Controller(private val repository: Repository) {
-    //@QueryMapping
+    @QueryMapping
     fun getFirstEntities(): List<FirstEntity> {
         return repository.findAll().toList()
     }
