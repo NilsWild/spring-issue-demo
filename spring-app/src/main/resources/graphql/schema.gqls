@@ -1,0 +1,19 @@
+schema {
+    query: Query
+}
+
+type FirstEntity {
+    id: ID!
+    secondEntities: [SecondEntity]!
+}
+
+type SecondEntity {
+    id: ID!
+    labels: [String]!
+    prev: [SecondEntity]!
+}
+
+type Query {
+    firstEntities: [FirstEntity]!
+    getFirstEntities: [FirstEntity]!
+}

@@ -9,52 +9,39 @@ import java.util.*
 
 
 @Node
-class A() {
-    constructor(bs: Set<B>): this(){
-        this.bs = bs
+class FirstEntity() {
+    constructor(secondEntities: Set<SecondEntity>): this(){
+        this.id = UUID.randomUUID()
+        this.secondEntities = secondEntities
     }
     @Id
-    var id: UUID = UUID.randomUUID()
+    var id: UUID? = null
+
     @Relationship
-    var bs: Set<B> = setOf()
+    var secondEntities: Set<SecondEntity> = emptySet()
 
     @Version
     var version: Long? = null
 }
 
 @Node
-class B() {
+class SecondEntity() {
 
-    constructor(labels: Set<String>, prev: Set<B>): this(){
+    constructor(labels: Set<String>, prev: Set<SecondEntity>): this(){
+        this.id = UUID.randomUUID()
         this.prev = prev
         this.labels = labels
     }
 
     @Id
-    var id: UUID = UUID.randomUUID()
+    var id: UUID? = null
 
     @DynamicLabels
     var labels: Set<String> = emptySet()
 
     @Relationship
-    var prev: Set<B> = setOf()
+    var prev: Set<SecondEntity> = setOf()
 
     @Version
     var version: Long? = null
 }
-
-interface AProjection: EntityReferenceProjection {
-    val bs: Set<BProjection>
-
-    interface BProjection: EntityReferenceProjection {
-        val prev: Set<EntityReferenceProjection>
-        val labels: Set<String>
-    }
-
-}
-
-interface EntityReferenceProjection {
-    val id: UUID
-    val version: Long?
-}
-
